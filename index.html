@@ -1,0 +1,3897 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Landing Distance Calculator</title>
+  
+<style>
+.warning {
+  margin-top: 10px;
+  color: #ff4444;
+  font-weight: bold;
+}
+.warning {
+  color: #ff3333;
+  font-weight: bold;
+  font-size: 30px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.result.ok {
+  background-color: #2e8b57;
+  color: white;
+  font-weight: bold;
+}
+.result.fail {
+  background-color: #b22222;
+  color: white;
+  font-weight: bold;
+}
+
+  body {
+    font-family: sans-serif;
+    padding: 20px;
+    display: flex;
+    background-color: #2e2e2e;
+    color: white;
+  }
+
+  h1, h2, label, th {
+    font-weight: bold;
+		font-size: 20px
+  }
+
+  input, select {
+    background-color: #e0e0e0;
+    color: black;
+    padding: 4px 8px;
+    width: 140px;
+   font-size: 20px;
+   padding: 8px;
+  }
+
+  .form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .form-row label {
+    width: 180px;
+    display: inline-block;
+  }
+	
+	input[type="checkbox"] {
+  transform: scale(1.5);
+  margin-right: 8px;
+}
+.results th,
+.results td {
+  font-size: 20px;
+  padding: 8px 12px;
+  text-align: center;
+}
+</style>
+
+</head>
+<body>
+
+
+<div class="inputs">
+<h1>Landing Distance Calculator</h1>
+
+
+<div class="form-row">
+  <label for="aircraft">Aircraft:</label>
+  <select id="aircraft">
+    <option value="VT-GSH">VT-GSH</option>
+    <option value="VT-GSI">VT-GSI</option>
+    <option value="VT-GSJ">VT-GSJ</option>
+    <option value="VT-GSU">VT-GSU</option>
+    <option value="VT-GSK">VT-GSK</option>
+  </select>
+</div>
+
+<div class="form-row">
+  <label for="runwayCondition">Runway Condition:</label>
+  <select id="runwayCondition">
+    <option value="DRY">Dry</option>
+    <option value="5">5</option>
+    <option value="4">4</option>
+		<option value="3">3</option>
+    <option value="2">2</option>
+    <option value="1">1</option>
+  </select>
+</div>
+
+<div class="form-row">
+  <label for="flapSetting">Flap Setting:</label>
+  <select id="flapSetting">
+    <option value="5">Flap 5</option>
+    <option value="FULL">Flap Full</option>
+  </select>
+</div>
+
+<div class="form-row">
+  <label for="icing">ICEING:</label>
+  <select id="icing">
+    <option value="NO">No</option>
+    <option value="YES">Yes</option>
+  </select>
+</div>
+
+<div class="form-row">
+  <label for="runwayDistance">Runway Distance (m):</label>
+  <input type="number" id="runwayDistance">
+</div>
+
+<div class="form-row">
+  <label for="weight">Landing Weight (kg):</label>
+  <input type="number" id="weight">
+</div>
+
+<div class="form-row">
+  <label for="elevation">Runway Elevation (ft):</label>
+  <input type="number" id="elevation">
+</div>
+
+<div class="form-row">
+  <label for="runwayDir">Runway Direction:</label>
+  <input type="number" id="runwayDir">
+</div>
+
+<div class="form-row">
+  <label for="windDir">Wind Direction:</label>
+  <input type="number" id="windDir">
+</div>
+
+<div class="form-row">
+  <label for="windSpeed">Wind Speed (kt):</label>
+  <input type="number" id="windSpeed">
+</div>
+
+<div class="form-row">
+  <label for="temperature">Temperature (°C):</label>
+  <input type="number" id="temperature">
+</div>
+
+<div class="form-row">
+  <label for="vap">Vap Correction (kt):</label>
+  <input type="number" id="vap">
+</div>
+
+<div class="form-row">
+  <label for="slope">Slope (%):</label>
+  <input type="number" step="0.1" id="slope">
+</div>
+
+<div class="form-row">
+  <label for="revInop">Reverse Inoperative:</label>
+  <input type="checkbox" id="revInop">
+</div>
+
+<br>
+<button onclick="calculate()">CALCULATE</button>
+
+</div>
+
+
+<div class="results">
+<h2>Result</h2>
+<table border="1">
+  <tr><th>Configuration</th><th>Landing Distance (m)</th><th>FO LIMIT</th></tr>
+  <tr><td>MAX MAN</td><td class="result" id="MAX MAN">–</td><td class="fo-limit" id="MAX MAN-FO">–</td></tr>
+	<tr><td>HIGH</td><td class="result" id="HIGH">–</td><td class="fo-limit" id="HIGH-FO">–</td></tr>
+  <tr><td>MEDIUM</td><td class="result" id="MEDIUM">–</td><td class="fo-limit" id="MEDIUM-FO">–</td></tr>
+  <tr><td>LOW</td><td class="result" id="LOW">–</td><td class="fo-limit" id="LOW-FO">–</td></tr>
+  
+</table>
+<p class="warning" id="windWarning"></p>
+<p class="warning" id="crosswindWarning"></p>
+
+<style>
+
+.warning {
+  color: #ff5555;
+  font-weight: bold;
+  font-size: 30px;
+  margin-top: 10px;
+}
+
+.fo-limit.ok {
+  background-color: #2e8b57;
+  color: white;
+  font-weight: bold;
+}
+.fo-limit.fail {
+  background-color: #b22222;
+  color: white;
+  font-weight: bold;
+}
+
+.warning {
+  margin-top: 10px;
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.result.ok high
+  background-color: #2e8b57;
+  color: white;
+  font-weight: bold;
+}
+.result.fail {
+  background-color: #b22222;
+  color: white;
+  font-weight: bold;
+}
+
+  .results{ margin-left: 150px;}
+</style>
+</div>
+
+<script>
+const baseData = {
+  "DRY": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1028,
+  weightBelow: 0.023,
+  weightAbove: 0.026,
+  elevation: 0.030,
+  tempBelowISA: 9/5,
+  tempAboveISA: 22/5,
+  headwind: -22/5,
+  tailwind: 115/5,
+  slopeUp: -5,
+  slopeDown: 113,
+  vap: 112/5,
+  revInop: 31
+},
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1285,
+  weightBelow: 0.026,
+  weightAbove: 0.029,
+  elevation: 0.031,
+  tempBelowISA: 13/5,
+  tempAboveISA: 22/5,
+  headwind: -27/5,
+  tailwind: 116/5,
+  slopeUp: -4,
+  slopeDown: 103,
+  vap: 115/5,
+  revInop: 19
+},
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1532,
+  weightBelow: 0.033,
+  weightAbove: 0.036,
+  elevation: 0.040,
+  tempBelowISA: 16/5,
+  tempAboveISA: 28/5,
+  headwind: -33/5,
+  tailwind: 144/5,
+  slopeUp: -5,
+  slopeDown: 96,
+  vap: 141/5,
+  revInop: 0
+},
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2228,
+  weightBelow: 0.054,
+  weightAbove: 0.059,
+  elevation: 0.066,
+  tempBelowISA: 25/5,
+  tempAboveISA: 47/5,
+  headwind: -52/5,
+  tailwind: 243/5,
+  slopeUp: -10,
+  slopeDown: 106,
+  vap: 238/5,
+  revInop: 0
+},
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1126,
+  weightBelow: 0.027,
+  weightAbove: 0.030,
+  elevation: 0.033,
+  tempBelowISA: 10/5,
+  tempAboveISA: 25/5,
+  headwind: -23/5,
+  tailwind: 124/5,
+  slopeUp: -5,
+  slopeDown: 122,
+  vap: 118/5,
+  revInop: 38
+},
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1407,
+  weightBelow: 0.030,
+  weightAbove: 0.031,
+  elevation: 0.035,
+  tempBelowISA: 14/5,
+  tempAboveISA: 25/5,
+  headwind: -27/5,
+  tailwind: 122/5,
+  slopeUp: -4,
+  slopeDown: 111,
+  vap: 121/5,
+  revInop: 24
+},
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1689,
+  weightBelow: 0.039,
+  weightAbove: 0.040,
+  elevation: 0.045,
+  tempBelowISA: 18/5,
+  tempAboveISA: 32/5,
+  headwind: -34/5,
+  tailwind: 150/5,
+  slopeUp: -6,
+  slopeDown: 102,
+  vap: 147/5,
+  revInop: 0
+},
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2485,
+  weightBelow: 0.064,
+  weightAbove: 0.065,
+  elevation: 0.074,
+  tempBelowISA: 28/5,
+  tempAboveISA: 53/5,
+  headwind: -54/5,
+  tailwind: 256/5,
+  slopeUp: -11,
+  slopeDown: 113,
+  vap: 243/5,
+  revInop: 0
+},
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 931,
+  weightBelow: 0.021,
+  weightAbove: 0.021,
+  elevation: 0.026,
+  tempBelowISA: 8/5,
+  tempAboveISA: 19/5,
+  headwind: -21/5,
+  tailwind: 106/5,
+  slopeUp: -4,
+  slopeDown: 97,
+  vap: 103/5,
+  revInop: 24
+},
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1169,
+  weightBelow: 0.024,
+  weightAbove: 0.024,
+  elevation: 0.028,
+  tempBelowISA: 11/5,
+  tempAboveISA: 20/5,
+  headwind: -26/5,
+  tailwind: 110/5,
+  slopeUp: -4,
+  slopeDown: 89,
+  vap: 109/5,
+  revInop: 14
+},
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 25/5,
+  headwind: -32/5,
+  tailwind: 137/5,
+  slopeUp: -5,
+  slopeDown: 84,
+  vap: 135/5,
+  revInop: 0
+},
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+},
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 931,
+  weightBelow: 0.021,
+  weightAbove: 0.021,
+  elevation: 0.026,
+  tempBelowISA: 8/5,
+  tempAboveISA: 19/5,
+  headwind: -21/5,
+  tailwind: 106/5,
+  slopeUp: -4,
+  slopeDown: 97,
+  vap: 103/5,
+  revInop: 24
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1196,
+  weightBelow: 0.024,
+  weightAbove: 0.024,
+  elevation: 0.028,
+  tempBelowISA: 11/5,
+  tempAboveISA: 20/5,
+  headwind: -26/5,
+  tailwind: 110/5,
+  slopeUp: -4,
+  slopeDown: 89,
+  vap: 109/5,
+  revInop: 14
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 25/5,
+  headwind: -32/5,
+  tailwind: 137/5,
+  slopeUp: -5,
+  slopeDown: 84,
+  vap: 135/5,
+  revInop: 0
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+    },
+  },
+  "5": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1273,
+  weightBelow: 0.033,
+  weightAbove: 0.037,
+  elevation: 0.047,
+  tempBelowISA: 13/5,
+  tempAboveISA: 34/5,
+  headwind: -30/5,
+  tailwind: 188/5,
+  slopeUp: -9,
+  slopeDown: 164,
+  vap: 148/5,
+  revInop: 141
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1421,
+  weightBelow: 0.034,
+  weightAbove: 0.037,
+  elevation: 0.046,
+  tempBelowISA: 14/5,
+  tempAboveISA: 33/5,
+  headwind: -32/5,
+  tailwind: 189/5,
+  slopeUp: -10,
+  slopeDown: 162,
+  vap: 150/5,
+  revInop: 141
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1532,
+  weightBelow: 0.033,
+  weightAbove: 0.036,
+  elevation: 0.041,
+  tempBelowISA: 16/5,
+  tempAboveISA: 31/5,
+  headwind: -33/5,
+  tailwind: 183/5,
+  slopeUp: -5,
+  slopeDown: 156,
+  vap: 150/5,
+  revInop: 141
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2228,
+  weightBelow: 0.051,
+  weightAbove: 0.059,
+  elevation: 0.066,
+  tempBelowISA: 25/5,
+  tempAboveISA: 47/5,
+  headwind: -52/5,
+  tailwind: 243/5,
+  slopeUp: -10,
+  slopeDown: 106,
+  vap: 238/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1408,
+  weightBelow: 0.039,
+  weightAbove: 0.041,
+  elevation: 0.052,
+  tempBelowISA: 15/5,
+  tempAboveISA: 38/5,
+  headwind: -32/5,
+  tailwind: 197/5,
+  slopeUp: -10,
+  slopeDown: 177,
+  vap: 148/5,
+  revInop: 158
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1561,
+  weightBelow: 0.039,
+  weightAbove: 0.041,
+  elevation: 0.052,
+  tempBelowISA: 15/5,
+  tempAboveISA: 37/5,
+  headwind: -34/5,
+  tailwind: 199/5,
+  slopeUp: -11,
+  slopeDown: 176,
+  vap: 151/5,
+  revInop: 160
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1689,
+  weightBelow: 0.039,
+  weightAbove: 0.040,
+  elevation: 0.045,
+  tempBelowISA: 18/5,
+  tempAboveISA: 35/5,
+  headwind: -34/5,
+  tailwind: 193/5,
+  slopeUp: -6,
+  slopeDown: 170,
+  vap: 151/5,
+  revInop: 160
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2485,
+  weightBelow: 0.064,
+  weightAbove: 0.065,
+  elevation: 0.074,
+  tempBelowISA: 28/5,
+  tempAboveISA: 53/5,
+  headwind: -53/5,
+  tailwind: 256/5,
+  slopeUp: -11,
+  slopeDown: 113,
+  vap: 243/5,
+  revInop: 0
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1126,
+  weightBelow: 0.029,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 11/5,
+  tempAboveISA: 29/5,
+  headwind: -28/5,
+  tailwind: 171/5,
+  slopeUp: -7,
+  slopeDown: 138,
+  vap: 137/5,
+  revInop: 106
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1281,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 12/5,
+  tempAboveISA: 28/5,
+  headwind: -31/5,
+  tailwind: 174/5,
+  slopeUp: -9,
+  slopeDown: 138,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 26/5,
+  headwind: -32/5,
+  tailwind: 166/5,
+  slopeUp: -5,
+  slopeDown: 133,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1126,
+  weightBelow: 0.029,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 11/5,
+  tempAboveISA: 29/5,
+  headwind: -28/5,
+  tailwind: 171/5,
+  slopeUp: -7,
+  slopeDown: 138,
+  vap: 137,
+  revInop: 106
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1281,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 12/5,
+  tempAboveISA: 28/5,
+  headwind: -31/5,
+  tailwind: 174/5,
+  slopeUp: -9,
+  slopeDown: 138,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 26/5,
+  headwind: -32/5,
+  tailwind: 166/5,
+  slopeUp: -5,
+  slopeDown: 133,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+    },
+  },
+  "4": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+
+{
+  refWeight: 32000,
+  refDistance: 1470,
+  weightBelow: 0.032,
+  weightAbove: 0.035,
+  elevation: 0.043,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -35/5,
+  tailwind: 167/5,
+  slopeUp: -23,
+  slopeDown: 177,
+  vap: 120/5,
+  revInop: 140
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1623,
+  weightBelow: 0.033,
+  weightAbove: 0.036,
+  elevation: 0.044,
+  tempBelowISA: 16/5,
+  tempAboveISA: 30/5,
+  headwind: -38/5,
+  tailwind: 173/5,
+  slopeUp: -24,
+  slopeDown: 178,
+  vap: 126/5,
+  revInop: 108
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1652,
+  weightBelow: 0.034,
+  weightAbove: 0.037,
+  elevation: 0.044,
+  tempBelowISA: 16/5,
+  tempAboveISA: 31/5,
+  headwind: -39/5,
+  tailwind: 175/5,
+  slopeUp: -19,
+  slopeDown: 164,
+  vap: 141/5,
+  revInop: 85
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2228,
+  weightBelow: 0.054,
+  weightAbove: 0.059,
+  elevation: 0.066,
+  tempBelowISA: 24/5,
+  tempAboveISA: 47/5,
+  headwind: -50/5,
+  tailwind: 243/5,
+  slopeUp: -13,
+  slopeDown: 106,
+  vap: 238/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1595,
+  weightBelow: 0.037,
+  weightAbove: 0.038,
+  elevation: 0.047,
+  tempBelowISA: 16/5,
+  tempAboveISA: 33/5,
+  headwind: -36/5,
+  tailwind: 172/5,
+  slopeUp: -24,
+  slopeDown: 187,
+  vap: 133/5,
+  revInop: 158
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1757,
+  weightBelow: 0.038,
+  weightAbove: 0.039,
+  elevation: 0.049,
+  tempBelowISA: 17/5,
+  tempAboveISA: 33/5,
+  headwind: -39/5,
+  tailwind: 179/5,
+  slopeUp: -25,
+  slopeDown: 188,
+  vap: 126/5,
+  revInop: 151
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1809,
+  weightBelow: 0.039,
+  weightAbove: 0.040,
+  elevation: 0.048,
+  tempBelowISA: 18/5,
+  tempAboveISA: 34/5,
+  headwind: -40/5,
+  tailwind: 181/5,
+  slopeUp: -19,
+  slopeDown: 169,
+  vap: 147/5,
+  revInop: 104
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2485,
+  weightBelow: 0.064,
+  weightAbove: 0.065,
+  elevation: 0.074,
+  tempBelowISA: 27/5,
+  tempAboveISA: 53/5,
+  headwind: -53/5,
+  tailwind: 256/5,
+  slopeUp: -13,
+  slopeDown: 113,
+  vap: 243/5,
+  revInop: 0
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1325,
+  weightBelow: 0.029,
+  weightAbove: 0.029,
+  elevation: 0.038,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -34/5,
+  tailwind: 159/5,
+  slopeUp: -21,
+  slopeDown: 157,
+  vap: 116/5,
+  revInop: 78
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1479,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -37/5,
+  tailwind: 166/5,
+  slopeUp: -22,
+  slopeDown: 158,
+  vap: 122/5,
+  revInop: 85
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1500,
+  weightBelow: 0.031,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 14/5,
+  tempAboveISA: 28/5,
+  headwind: -37/5,
+  tailwind: 167/5,
+  slopeUp: -18,
+  slopeDown: 149,
+  vap: 134/5,
+  revInop: 65
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -48/5,
+  tailwind: 230/5,
+  slopeUp: -12,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1325,
+  weightBelow: 0.029,
+  weightAbove: 0.029,
+  elevation: 0.038,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -34/5,
+  tailwind: 159/5,
+  slopeUp: -21,
+  slopeDown: 157,
+  vap: 116/5,
+  revInop: 78
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1479,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -37/5,
+  tailwind: 166/5,
+  slopeUp: -22,
+  slopeDown: 158,
+  vap: 122/5,
+  revInop: 85
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1500,
+  weightBelow: 0.031,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 14/5,
+  tempAboveISA: 28/5,
+  headwind: -37/5,
+  tailwind: 167/5,
+  slopeUp: -18,
+  slopeDown: 149,
+  vap: 134/5,
+  revInop: 65
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -12,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+},
+        },
+      },
+    },
+
+  "3": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+
+{
+  refWeight: 32000,
+  refDistance: 1631,
+  weightBelow: 0.035,
+  weightAbove: 0.039,
+  elevation: 0.049,
+  tempBelowISA: 16/5,
+  tempAboveISA: 34/5,
+  headwind: -41/5,
+  tailwind: 195/5,
+  slopeUp: -35,
+  slopeDown: 219,
+  vap: 130/5,
+  revInop: 137
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1770,
+  weightBelow: 0.036,
+  weightAbove: 0.040,
+  elevation: 0.050,
+  tempBelowISA: 17/5,
+  tempAboveISA: 34/5,
+  headwind: -43/5,
+  tailwind: 201/5,
+  slopeUp: -36,
+  slopeDown: 219,
+  vap: 136/5,
+  revInop: 141
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1773,
+  weightBelow: 0.036,
+  weightAbove: 0.040,
+  elevation: 0.049,
+  tempBelowISA: 17/5,
+  tempAboveISA: 34/5,
+  headwind: -43/5,
+  tailwind: 201/5,
+  slopeUp: -33,
+  slopeDown: 219,
+  vap: 137/5,
+  revInop: 138
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2247,
+  weightBelow: 0.053,
+  weightAbove: 0.058,
+  elevation: 0.065,
+  tempBelowISA: 23/5,
+  tempAboveISA: 47/5,
+  headwind: -50/5,
+  tailwind: 243/5,
+  slopeUp: -22,
+  slopeDown: 150,
+  vap: 238/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1764,
+  weightBelow: 0.040,
+  weightAbove: 0.042,
+  elevation: 0.053,
+  tempBelowISA: 18/5,
+  tempAboveISA: 37/5,
+  headwind: -42/5,
+  tailwind: 200/5,
+  slopeUp: -36,
+  slopeDown: 230,
+  vap: 130/5,
+  revInop: 149
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1913,
+  weightBelow: 0.041,
+  weightAbove: 0.043,
+  elevation: 0.054,
+  tempBelowISA: 18/5,
+  tempAboveISA: 37/5,
+  headwind: -44/5,
+  tailwind: 206/5,
+  slopeUp: -38,
+  slopeDown: 230,
+  vap: 135/5,
+  revInop: 154
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1924,
+  weightBelow: 0.041,
+  weightAbove: 0.043,
+  elevation: 0.054,
+  tempBelowISA: 18/5,
+  tempAboveISA: 37/5,
+  headwind: -44/5,
+  tailwind: 207/5,
+  slopeUp: -31,
+  slopeDown: 226,
+  vap: 143/5,
+  revInop: 140
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2504,
+  weightBelow: 0.062,
+  weightAbove: 0.064,
+  elevation: 0.073,
+  tempBelowISA: 26/5,
+  tempAboveISA: 53/5,
+  headwind: -53/5,
+  tailwind: 256/5,
+  slopeUp: -23,
+  slopeDown: 156,
+  vap: 243/5,
+  revInop: 0
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1466,
+  weightBelow: 0.031,
+  weightAbove: 0.032,
+  elevation: 0.043,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -39/5,
+  tailwind: 185/5,
+  slopeUp: -31,
+  slopeDown: 194,
+  vap: 125/5,
+  revInop: 110
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1611,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -32,
+  slopeDown: 195,
+  vap: 131/5,
+  revInop: 116
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1612,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -30,
+  slopeDown: 195,
+  vap: 132/5,
+  revInop: 113
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 41/5,
+  headwind: -48/5,
+  tailwind: 230/5,
+  slopeUp: -21,
+  slopeDown: 133,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1466,
+  weightBelow: 0.031,
+  weightAbove: 0.032,
+  elevation: 0.043,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -39/5,
+  tailwind: 185/5,
+  slopeUp: -31,
+  slopeDown: 194,
+  vap: 125/5,
+  revInop: 110
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1611,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -32,
+  slopeDown: 195,
+  vap: 131/5,
+  revInop: 116
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1612,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -30,
+  slopeDown: 195,
+  vap: 132/5,
+  revInop: 113
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 41/5,
+  headwind: -48/5,
+  tailwind: 230/5,
+  slopeUp: -21,
+  slopeDown: 133,
+  vap: 226/5,
+  revInop: 0
+}
+,
+     	},
+      },
+    },
+	
+ "2": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1853,
+  weightBelow: 0.049,
+  weightAbove: 0.055,
+  elevation: 0.075,
+  tempBelowISA: 21/5,
+  tempAboveISA: 52/5,
+  headwind: -48/5,
+  tailwind: 312/5,
+  slopeUp: -36,
+  slopeDown: 354,
+  vap: 178/5,
+  revInop: 440
+},
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1934,
+  weightBelow: 0.048,
+  weightAbove: 0.055,
+  elevation: 0.073,
+  tempBelowISA: 21/5,
+  tempAboveISA: 51/5,
+  headwind: -46/5,
+  tailwind: 314/5,
+  slopeUp: -35,
+  slopeDown: 349,
+  vap: 185/5,
+  revInop: 424
+},
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1934,
+  weightBelow: 0.048,
+  weightAbove: 0.055,
+  elevation: 0.073,
+  tempBelowISA: 21/5,
+  tempAboveISA: 51/5,
+  headwind: -46/5,
+  tailwind: 314/5,
+  slopeUp: -35,
+  slopeDown: 349,
+  vap: 185/5,
+  revInop: 424
+},
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2247,
+  weightBelow: 0.053,
+  weightAbove: 0.058,
+  elevation: 0.066,
+  tempBelowISA: 23/5,
+  tempAboveISA: 49/5,
+  headwind: -50/5,
+  tailwind: 283/5,
+  slopeUp: -24,
+  slopeDown: 286,
+  vap: 232/5,
+  revInop: 396
+},
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2023,
+  weightBelow: 0.055,
+  weightAbove: 0.060,
+  elevation: 0.081,
+  tempBelowISA: 23/5,
+  tempAboveISA: 56/5,
+  headwind: -52/5,
+  tailwind: 321/5,
+  slopeUp: -38,
+  slopeDown: 372,
+  vap: 173/5,
+  revInop: 373
+},
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2114,
+  weightBelow: 0.055,
+  weightAbove: 0.059,
+  elevation: 0.080,
+  tempBelowISA: 23/5,
+  tempAboveISA: 55/5,
+  headwind: -50/5,
+  tailwind: 323/5,
+  slopeUp: -38,
+  slopeDown: 367,
+  vap: 180/5,
+  revInop: 369
+},
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2114,
+  weightBelow: 0.055,
+  weightAbove: 0.059,
+  elevation: 0.080,
+  tempBelowISA: 23/5,
+  tempAboveISA: 55/5,
+  headwind: -50/5,
+  tailwind: 323/5,
+  slopeUp: -33,
+  slopeDown: 367,
+  vap: 180/5,
+  revInop: 369
+},
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2504,
+  weightBelow: 0.062,
+  weightAbove: 0.064,
+  elevation: 0.074,
+  tempBelowISA: 26/5,
+  tempAboveISA: 55/5,
+  headwind: -53/5,
+  tailwind: 296/5,
+  slopeUp: -25,
+  slopeDown: 292,
+  vap: 240/5,
+  revInop: 304
+},
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1616,
+  weightBelow: 0.043,
+  weightAbove: 0.045,
+  elevation: 0.062,
+  tempBelowISA: 18/5,
+  tempAboveISA: 44/5,
+  headwind: -41/5,
+  tailwind: 286/5,
+  slopeUp: -32,
+  slopeDown: 296,
+  vap: 166/5,
+  revInop: 389
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -32,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -30,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 42/5,
+  headwind: -48/5,
+  tailwind: 255/5,
+  slopeUp: -21,
+  slopeDown: 235,
+  vap: 226/5,
+  revInop: 324
+},
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1616,
+  weightBelow: 0.043,
+  weightAbove: 0.045,
+  elevation: 0.062,
+  tempBelowISA: 18/5,
+  tempAboveISA: 44/5,
+  headwind: -41/5,
+  tailwind: 286/5,
+  slopeUp: -32,
+  slopeDown: 296,
+  vap: 166/5,
+  revInop: 389
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -32,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -30,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 42/5,
+  headwind: -48/5,
+  tailwind: 255/5,
+  slopeUp: -21,
+  slopeDown: 235,
+  vap: 226/5,
+  revInop: 324
+}
+,
+        },
+	},
+	},
+		
+  "1": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2362,
+  weightBelow: 0.033,
+  weightAbove: 0.046,
+  elevation: 0.068,
+  tempBelowISA: 24/5,
+  tempAboveISA: 50/5,
+  headwind: -67/5,
+  tailwind: 327/5,
+  slopeUp: -153,
+  slopeDown: 1072,
+  vap: 144/5,
+  revInop: 253
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2464,
+  weightBelow: 0.033,
+  weightAbove: 0.046,
+  elevation: 0.067,
+  tempBelowISA: 24/5,
+  tempAboveISA: 49/5,
+  headwind: -69/5,
+  tailwind: 331/5,
+  slopeUp: -153,
+  slopeDown: 1065,
+  vap: 150/5,
+  revInop: 233
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2464,
+  weightBelow: 0.033,
+  weightAbove: 0.046,
+  elevation: 0.067,
+  tempBelowISA: 24/5,
+  tempAboveISA: 49/5,
+  headwind: -69/5,
+  tailwind: 331/5,
+  slopeUp: -153,
+  slopeDown: 1065,
+  vap: 150/5,
+  revInop: 233
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2708,
+  weightBelow: 0.040,
+  weightAbove: 0.052,
+  elevation: 0.069,
+  tempBelowISA: 27/5,
+  tempAboveISA: 54/5,
+  headwind: -74/5,
+  tailwind: 346/5,
+  slopeUp: -132,
+  slopeDown: 907,
+  vap: 225/5,
+  revInop: 96
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2519,
+  weightBelow: 0.039,
+  weightAbove: 0.050,
+  elevation: 0.074,
+  tempBelowISA: 25/5,
+  tempAboveISA: 53/5,
+  headwind: -68/5,
+  tailwind: 335/5,
+  slopeUp: -155,
+  slopeDown: 1058,
+  vap: 142/5,
+  revInop: 255
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2630,
+  weightBelow: 0.040,
+  weightAbove: 0.050,
+  elevation: 0.073,
+  tempBelowISA: 26/5,
+  tempAboveISA: 53/5,
+  headwind: -70/5,
+  tailwind: 388/5,
+  slopeUp: -155,
+  slopeDown: 943,
+  vap: 148/5,
+  revInop: 243
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2630,
+  weightBelow: 0.040,
+  weightAbove: 0.050,
+  elevation: 0.073,
+  tempBelowISA: 26/5,
+  tempAboveISA: 53/5,
+  headwind: -70/5,
+  tailwind: 338/5,
+  slopeUp: -155,
+  slopeDown: 943,
+  vap: 148/5,
+  revInop: 243
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2965,
+  weightBelow: 0.050,
+  weightAbove: 0.058,
+  elevation: 0.077,
+  tempBelowISA: 30/5,
+  tempAboveISA: 60/5,
+  headwind: -76/5,
+  tailwind: 359/5,
+  slopeUp: -133,
+  slopeDown: 887,
+  vap: 233/5,
+  revInop: 106
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2107,
+  weightBelow: 0.031,
+  weightAbove: 0.039,
+  elevation: 0.059,
+  tempBelowISA: 22/5,
+  tempAboveISA: 44/5,
+  headwind: -69/5,
+  tailwind: 311/5,
+  slopeUp: -116,
+  slopeDown: 986,
+  vap: 136/5,
+  revInop: 194
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2429,
+  weightBelow: 0.038,
+  weightAbove: 0.043,
+  elevation: 0.061,
+  tempBelowISA: 25/5,
+  tempAboveISA: 48/5,
+  headwind: -75/5,
+  tailwind: 330/5,
+  slopeUp: -108,
+  slopeDown: 964,
+  vap: 219/5,
+  revInop: 70
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2107,
+  weightBelow: 0.031,
+  weightAbove: 0.039,
+  elevation: 0.059,
+  tempBelowISA: 22/5,
+  tempAboveISA: 44/5,
+  headwind: -69/5,
+  tailwind: 311/5,
+  slopeUp: -116,
+  slopeDown: 986,
+  vap: 136/5,
+  revInop: 194
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2429,
+  weightBelow: 0.038,
+  weightAbove: 0.043,
+  elevation: 0.061,
+  tempBelowISA: 25/5,
+  tempAboveISA: 48/5,
+  headwind: -75/5,
+  tailwind: 330/5,
+  slopeUp: -108,
+  slopeDown: 964,
+  vap: 219/5,
+  revInop: 70
+}
+,
+     },
+    },
+  },
+};
+
+
+function calculate() {
+  saveInputsToLocalStorage();
+  const aircraft = document.getElementById('aircraft').value;
+  const selectedBaseData = (aircraft === 'VT-GSK') ? baseData_GSK : baseData;
+  const cond = document.getElementById("runwayCondition").value;
+  const flap = document.getElementById("flapSetting").value;
+  const ice = document.getElementById("icing").value;
+
+  const weight = parseFloat(document.getElementById("weight").value);
+  const elevation = parseFloat(document.getElementById("elevation").value);
+  const rwyDir = parseFloat(document.getElementById("runwayDir").value);
+  const windDir = parseFloat(document.getElementById("windDir").value);
+  const windSpeed = parseFloat(document.getElementById("windSpeed").value);
+  const temp = parseFloat(document.getElementById("temperature").value);
+  const vap = parseFloat(document.getElementById("vap").value);
+  const slope = parseFloat(document.getElementById("slope").value);
+  const revInop = document.getElementById("revInop").checked;
+  const rwyDist = parseFloat(document.getElementById("runwayDistance").value);
+	const crossWindComp = windSpeed * Math.sin((windDir - rwyDir) * Math.PI / 180);
+  const absCrosswind = Math.abs(crossWindComp);
+  const runwayCond = document.getElementById("runwayCondition").value;
+
+
+  document.getElementById("crosswindWarning").innerText = "";
+  document.getElementById("windWarning").innerText = "";
+
+  for (const mode of ["MAX MAN", "HIGH", "MEDIUM", "LOW"]) {
+    const data = selectedBaseData[cond]?.[flap]?.[ice]?.[mode];
+    if (!data) continue;
+
+    let ldr = data.refDistance;
+
+    // Corrected weight logic
+    const deltaWeight = weight - data.refWeight;
+    if (deltaWeight < 0) {
+      ldr += deltaWeight * data.weightBelow;
+    } else {
+      ldr += deltaWeight * data.weightAbove;
+    }
+
+    // Elevation correction
+    ldr += elevation * data.elevation;
+
+    // Corrected ISA temperature logic
+    const isaTemp = 15 - (elevation / 300);
+    const deltaISA = temp - isaTemp;
+    if (deltaISA < 0) {
+      ldr += deltaISA * data.tempBelowISA;
+    } else {
+      ldr += deltaISA * data.tempAboveISA;
+    }
+
+    // Wind component
+    const windComp = windSpeed * Math.cos((windDir - rwyDir) * Math.PI / 180);
+const crossWindComp = windSpeed * Math.sin((windDir - rwyDir) * Math.PI / 180);
+const absCrosswind = Math.abs(crossWindComp);
+document.getElementById("windWarning").innerText = "";
+document.getElementById("crosswindWarning").innerText = "";
+if (windComp > 0) {
+  ldr += windComp * data.headwind;
+} else {
+  ldr += Math.abs(windComp) * data.tailwind;
+  if (Math.abs(windComp) >= 11) {
+    document.getElementById("windWarning").innerText = "EXCEEDING 10 kts TAIL WIND LIMIT";
+  }
+}
+let crosswindLimit = 0;
+switch (runwayCond) {
+  case "DRY":
+  case "6":
+    crosswindLimit = 38;
+    break;
+  case "5":
+    crosswindLimit = 31;
+    break;
+  case "4":
+    crosswindLimit = 20;
+    break;
+  case "3":
+    crosswindLimit = 15;
+    break;
+  case "2":
+    crosswindLimit = 12;
+    break;
+  case "1":
+    crosswindLimit = 8;
+    break;
+}
+if (crosswindLimit > 0 && absCrosswind > crosswindLimit) {
+  document.getElementById("crosswindWarning").innerText = `EXCEEDING ${crosswindLimit} kts CROSS WIND LIMIT`;
+}
+document.getElementById("windWarning").innerText = ""; // reset
+
+if (windComp > 0) {
+  ldr += windComp * data.headwind;
+} else {
+  ldr += Math.abs(windComp) * data.tailwind;
+
+  if (Math.abs(windComp) >= 11) {
+    document.getElementById("windWarning").innerText = "EXCEEDING 10 kts TAIL WIND LIMIT";
+	let crosswindLimit = 0;
+switch (runwayCond) {
+  case "DRY":
+  case "6":
+    crosswindLimit = 38;
+    break;
+  case "5":
+    crosswindLimit = 31;
+    break;
+  case "4":
+    crosswindLimit = 20;
+    break;
+  case "3":
+    crosswindLimit = 15;
+    break;
+  case "2":
+    crosswindLimit = 12;
+    break;
+  case "1":
+    crosswindLimit = 8;
+    break;
+}
+if (crosswindLimit > 0 && absCrosswind > crosswindLimit) {
+  document.getElementById("crosswindWarning").innerText = `EXCEEDING ${crosswindLimit} kts CROSS WIND LIMIT`;
+}
+	}
+}
+
+    // Slope correction
+    ldr += slope > 0 ? slope * data.slopeUp : Math.abs(slope) * data.slopeDown;
+
+    // Vap speed correction
+    ldr += vap * data.vap;
+
+    // Reverser
+    if (revInop) ldr += data.revInop;
+
+    const cell = document.getElementById(mode);
+    
+cell.innerText = Math.round(ldr) + " m";
+cell.className = "result " + (ldr > rwyDist ? "fail" : "ok");
+
+    cell.className = "result " + (ldr > rwyDist ? "fail" : "ok");
+		const foLimit = ldr + 300;          // możesz zmienić 300 na inną wartość w przyszłości
+const foCell = document.getElementById(mode + "-FO");
+foCell.innerText = Math.round(foLimit) + " m";
+foCell.className = "fo-limit " + (foLimit > rwyDist ? "fail" : "ok");
+  }
+}
+
+
+const baseData_GSK = {
+  "DRY": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 976,
+  weightBelow: 0.022,
+  weightAbove: 0.023,
+  elevation: 0.028,
+  tempBelowISA: 9/5,
+  tempAboveISA: 20/5,
+  headwind: -22/5,
+  tailwind: 111/5,
+  slopeUp: -4,
+  slopeDown: 108,
+  vap: 108/5,
+  revInop: 28
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1219,
+  weightBelow: 0.026,
+  weightAbove: 0.026,
+  elevation: 0.029,
+  tempBelowISA: 12/5,
+  tempAboveISA: 21/5,
+  headwind: -26/5,
+  tailwind: 113/5,
+  slopeUp: -4,
+  slopeDown: 99,
+  vap: 112/5,
+  revInop: 16
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1448,
+  weightBelow: 0.033,
+  weightAbove: 0.033,
+  elevation: 0.038,
+  tempBelowISA: 15/5,
+  tempAboveISA: 26/5,
+  headwind: -32/5,
+  tailwind: 140/5,
+  slopeUp: -5,
+  slopeDown: 93,
+  vap: 138/5,
+  revInop: 0
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2092,
+  weightBelow: 0.053,
+  weightAbove: 0.053,
+  elevation: 0.062,
+  tempBelowISA: 23/5,
+  tempAboveISA: 44/5,
+  headwind: -50/5,
+  tailwind: 236/5,
+  slopeUp: -10,
+  slopeDown: 102,
+  vap: 231/5,
+  revInop: 0
+},
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1070,
+  weightBelow: 0.025,
+  weightAbove: 0.027,
+  elevation: 0.031,
+  tempBelowISA: 10/5,
+  tempAboveISA: 23/5,
+  headwind: -22/5,
+  tailwind: 119/5,
+  slopeUp: -5,
+  slopeDown: 117,
+  vap: 114/5,
+  revInop: 34
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1338,
+  weightBelow: 0.029,
+  weightAbove: 0.029,
+  elevation: 0.033,
+  tempBelowISA: 13/5,
+  tempAboveISA: 23/5,
+  headwind: -27/5,
+  tailwind: 119/5,
+  slopeUp: -4,
+  slopeDown: 106,
+  vap: 118/5,
+  revInop: 21
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1600,
+  weightBelow: 0.037,
+  weightAbove: 0.037,
+  elevation: 0.042,
+  tempBelowISA: 17/5,
+  tempAboveISA: 30/5,
+  headwind: -33/5,
+  tailwind: 147/5,
+  slopeUp: -6,
+  slopeDown: 98,
+  vap: 144/5,
+  revInop: 0
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2339,
+  weightBelow: 0.060,
+  weightAbove: 0.060,
+  elevation: 0.069,
+  tempBelowISA: 26/5,
+  tempAboveISA: 49/5,
+  headwind: -53/5,
+  tailwind: 249/5,
+  slopeUp: -11,
+  slopeDown: 109,
+  vap: 243/5,
+  revInop: 0
+},
+  },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 931,
+  weightBelow: 0.021,
+  weightAbove: 0.021,
+  elevation: 0.026,
+  tempBelowISA: 8/5,
+  tempAboveISA: 19/5,
+  headwind: -21/5,
+  tailwind: 106/5,
+  slopeUp: -4,
+  slopeDown: 97,
+  vap: 103/5,
+  revInop: 24
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1169,
+  weightBelow: 0.024,
+  weightAbove: 0.024,
+  elevation: 0.028,
+  tempBelowISA: 11/5,
+  tempAboveISA: 20/5,
+  headwind: -26/5,
+  tailwind: 110/5,
+  slopeUp: -4,
+  slopeDown: 89,
+  vap: 109/5,
+  revInop: 14
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 25/5,
+  headwind: -32/5,
+  tailwind: 137/5,
+  slopeUp: -5,
+  slopeDown: 84,
+  vap: 135/5,
+  revInop: 0
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 931,
+  weightBelow: 0.021,
+  weightAbove: 0.021,
+  elevation: 0.026,
+  tempBelowISA: 8/5,
+  tempAboveISA: 19/5,
+  headwind: -21/5,
+  tailwind: 106/5,
+  slopeUp: -4,
+  slopeDown: 97,
+  vap: 103/5,
+  revInop: 24
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1169,
+  weightBelow: 0.024,
+  weightAbove: 0.024,
+  elevation: 0.028,
+  tempBelowISA: 11/5,
+  tempAboveISA: 20/5,
+  headwind: -26/5,
+  tailwind: 110/5,
+  slopeUp: -4,
+  slopeDown: 89,
+  vap: 109/5,
+  revInop: 14
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 25/5,
+  headwind: -32/5,
+  tailwind: 137/5,
+  slopeUp: -5,
+  slopeDown: 84,
+  vap: 135/5,
+  revInop: 0
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+},
+      },
+    },
+  },
+  "5": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1200,
+  weightBelow: 0.032,
+  weightAbove: 0.034,
+  elevation: 0.043,
+  tempBelowISA: 12/5,
+  tempAboveISA: 32/5,
+  headwind: -29/5,
+  tailwind: 182/5,
+  slopeUp: -8,
+  slopeDown: 156,
+  vap: 148/5,
+  revInop: 130
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1345,
+  weightBelow: 0.032,
+  weightAbove: 0.034,
+  elevation: 0.043,
+  tempBelowISA: 13/5,
+  tempAboveISA: 31/5,
+  headwind: -32/5,
+  tailwind: 183/5,
+  slopeUp: -9,
+  slopeDown: 154,
+  vap: 149/5,
+  revInop: 131
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1448,
+  weightBelow: 0.033,
+  weightAbove: 0.033,
+  elevation: 0.039,
+  tempBelowISA: 15/5,
+  tempAboveISA: 29/5,
+  headwind: -32/5,
+  tailwind: 177/5,
+  slopeUp: -5,
+  slopeDown: 149,
+  vap: 149/5,
+  revInop: 131
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2092,
+  weightBelow: 0.053,
+  weightAbove: 0.053,
+  elevation: 0.06,
+  tempBelowISA: 23/5,
+  tempAboveISA: 44/5,
+  headwind: -50/5,
+  tailwind: 236/5,
+  slopeUp: -10,
+  slopeDown: 102,
+  vap: 231/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1332,
+  weightBelow: 0.036,
+  weightAbove: 0.038,
+  elevation: 0.049,
+  tempBelowISA: 14/5,
+  tempAboveISA: 36/5,
+  headwind: -31/5,
+  tailwind: 192/5,
+  slopeUp: -9,
+  slopeDown: 170,
+  vap: 148/5,
+  revInop: 148
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1482,
+  weightBelow: 0.037,
+  weightAbove: 0.038,
+  elevation: 0.048,
+  tempBelowISA: 14/5,
+  tempAboveISA: 35/5,
+  headwind: -33/5,
+  tailwind: 193/5,
+  slopeUp: -10,
+  slopeDown: 168,
+  vap: 151/5,
+  revInop: 149
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1600,
+  weightBelow: 0.037,
+  weightAbove: 0.037,
+  elevation: 0.043,
+  tempBelowISA: 17/5,
+  tempAboveISA: 33/5,
+  headwind: -33/5,
+  tailwind: 187/5,
+  slopeUp: -6,
+  slopeDown: 162,
+  vap: 150/5,
+  revInop: 149
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2339,
+  weightBelow: 0.060,
+  weightAbove: 0.060,
+  elevation: 0.069,
+  tempBelowISA: 26/5,
+  tempAboveISA: 49/5,
+  headwind: -53/5,
+  tailwind: 249/5,
+  slopeUp: -11,
+  slopeDown: 109,
+  vap: 243/5,
+  revInop: 0
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1126,
+  weightBelow: 0.029,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 11/5,
+  tempAboveISA: 29/5,
+  headwind: -28/5,
+  tailwind: 171/5,
+  slopeUp: -7,
+  slopeDown: 138,
+  vap: 137/5,
+  revInop: 106
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1281,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 12/5,
+  tempAboveISA: 28/5,
+  headwind: -31/5,
+  tailwind: 174/5,
+  slopeUp: -9,
+  slopeDown: 138,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 26/5,
+  headwind: -32/5,
+  tailwind: 166/5,
+  slopeUp: -5,
+  slopeDown: 133,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1126,
+  weightBelow: 0.029,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 11/5,
+  tempAboveISA: 29/5,
+  headwind: -28/5,
+  tailwind: 171/5,
+  slopeUp: -7,
+  slopeDown: 138,
+  vap: 137,
+  revInop: 106
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1281,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 12/5,
+  tempAboveISA: 28/5,
+  headwind: -31/5,
+  tailwind: 174/5,
+  slopeUp: -9,
+  slopeDown: 138,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1384,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.036,
+  tempBelowISA: 14/5,
+  tempAboveISA: 26/5,
+  headwind: -32/5,
+  tailwind: 166/5,
+  slopeUp: -5,
+  slopeDown: 133,
+  vap: 141/5,
+  revInop: 110
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -49/5,
+  tailwind: 230/5,
+  slopeUp: -10,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+    },
+  },
+  "4": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1401,
+  weightBelow: 0.031,
+  weightAbove: 0.032,
+  elevation: 0.041,
+  tempBelowISA: 14/5,
+  tempAboveISA: 28/5,
+  headwind: -35/5,
+  tailwind: 164/5,
+  slopeUp: -22,
+  slopeDown: 171,
+  vap: 120/5,
+  revInop: 115
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1549,
+  weightBelow: 0.033,
+  weightAbove: 0.033,
+  elevation: 0.042,
+  tempBelowISA: 15/5,
+  tempAboveISA: 29/5,
+  headwind: -38/5,
+  tailwind: 170/5,
+  slopeUp: -24,
+  slopeDown: 172,
+  vap: 125/5,
+  revInop: 96
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1568,
+  weightBelow: 0.033,
+  weightAbove: 0.034,
+  elevation: 0.042,
+  tempBelowISA: 15/5,
+  tempAboveISA: 29/5,
+  headwind: -38/5,
+  tailwind: 171/5,
+  slopeUp: -19,
+  slopeDown: 163,
+  vap: 137/5,
+  revInop: 76
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2092,
+  weightBelow: 0.053,
+  weightAbove: 0.053,
+  elevation: 0.062,
+  tempBelowISA: 22/5,
+  tempAboveISA: 44/5,
+  headwind: -49/5,
+  tailwind: 236/5,
+  slopeUp: -12,
+  slopeDown: 102,
+  vap: 231/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1525,
+  weightBelow: 0.035,
+  weightAbove: 0.036,
+  elevation: 0.045,
+  tempBelowISA: 15/5,
+  tempAboveISA: 31/5,
+  headwind: -36/5,
+  tailwind: 169/5,
+  slopeUp: -24,
+  slopeDown: 181,
+  vap: 126/5,
+  revInop: 148
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1682,
+  weightBelow: 0.036,
+  weightAbove: 0.037,
+  elevation: 0.046,
+  tempBelowISA: 16/5,
+  tempAboveISA: 31/5,
+  headwind: -39/5,
+  tailwind: 176/5,
+  slopeUp: -25,
+  slopeDown: 182,
+  vap: 126/5,
+  revInop: 126
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1720,
+  weightBelow: 0.037,
+  weightAbove: 0.038,
+  elevation: 0.046,
+  tempBelowISA: 17/5,
+  tempAboveISA: 32/5,
+  headwind: -39/5,
+  tailwind: 178/5,
+  slopeUp: -19,
+  slopeDown: 166,
+  vap: 144/5,
+  revInop: 94
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2339,
+  weightBelow: 0.060,
+  weightAbove: 0.060,
+  elevation: 0.069,
+  tempBelowISA: 25/5,
+  tempAboveISA: 49/5,
+  headwind: -51/5,
+  tailwind: 249/5,
+  slopeUp: -13,
+  slopeDown: 109,
+  vap: 243/5,
+  revInop: 0
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1325,
+  weightBelow: 0.029,
+  weightAbove: 0.029,
+  elevation: 0.038,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -34/5,
+  tailwind: 159/5,
+  slopeUp: -21,
+  slopeDown: 157,
+  vap: 116/5,
+  revInop: 78
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1479,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -37/5,
+  tailwind: 166/5,
+  slopeUp: -22,
+  slopeDown: 158,
+  vap: 122/5,
+  revInop: 85
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1500,
+  weightBelow: 0.031,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 14/5,
+  tempAboveISA: 28/5,
+  headwind: -37/5,
+  tailwind: 167/5,
+  slopeUp: -18,
+  slopeDown: 149,
+  vap: 134/5,
+  revInop: 65
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -48/5,
+  tailwind: 230/5,
+  slopeUp: -12,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1325,
+  weightBelow: 0.029,
+  weightAbove: 0.029,
+  elevation: 0.038,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -34/5,
+  tailwind: 159/5,
+  slopeUp: -21,
+  slopeDown: 157,
+  vap: 116/5,
+  revInop: 78
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1479,
+  weightBelow: 0.030,
+  weightAbove: 0.030,
+  elevation: 0.040,
+  tempBelowISA: 14/5,
+  tempAboveISA: 27/5,
+  headwind: -37/5,
+  tailwind: 166/5,
+  slopeUp: -22,
+  slopeDown: 158,
+  vap: 122/5,
+  revInop: 85
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1500,
+  weightBelow: 0.031,
+  weightAbove: 0.030,
+  elevation: 0.039,
+  tempBelowISA: 14/5,
+  tempAboveISA: 28/5,
+  headwind: -37/5,
+  tailwind: 167/5,
+  slopeUp: -18,
+  slopeDown: 149,
+  vap: 134/5,
+  revInop: 65
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 1990,
+  weightBelow: 0.049,
+  weightAbove: 0.048,
+  elevation: 0.058,
+  tempBelowISA: 21/5,
+  tempAboveISA: 41/5,
+  headwind: -48/5,
+  tailwind: 230/5,
+  slopeUp: -12,
+  slopeDown: 93,
+  vap: 226/5,
+  revInop: 0
+},
+       },
+      },
+    },
+		
+	 "3": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+
+{
+  refWeight: 32000,
+  refDistance: 1557,
+  weightBelow: 0.034,
+  weightAbove: 0.036,
+  elevation: 0.046,
+  tempBelowISA: 16/5,
+  tempAboveISA: 32/5,
+  headwind: -40/5,
+  tailwind: 191/5,
+  slopeUp: -34,
+  slopeDown: 212,
+  vap: 131/5,
+  revInop: 130
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1692,
+  weightBelow: 0.035,
+  weightAbove: 0.036,
+  elevation: 0.047,
+  tempBelowISA: 16/5,
+  tempAboveISA: 32/5,
+  headwind: -42/5,
+  tailwind: 197/5,
+  slopeUp: -35,
+  slopeDown: 212,
+  vap: 136/5,
+  revInop: 134
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1693,
+  weightBelow: 0.035,
+  weightAbove: 0.036,
+  elevation: 0.047,
+  tempBelowISA: 16/5,
+  tempAboveISA: 32/5,
+  headwind: -42/5,
+  tailwind: 197/5,
+  slopeUp: -33,
+  slopeDown: 212,
+  vap: 136/5,
+  revInop: 133
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2112,
+  weightBelow: 0.051,
+  weightAbove: 0.052,
+  elevation: 0.061,
+  tempBelowISA: 21/5,
+  tempAboveISA: 44/5,
+  headwind: -58/5,
+  tailwind: 236/5,
+  slopeUp: -22,
+  slopeDown: 146,
+  vap: 231/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1689,
+  weightBelow: 0.037,
+  weightAbove: 0.039,
+  elevation: 0.051,
+  tempBelowISA: 16/5,
+  tempAboveISA: 35/5,
+  headwind: -41/5,
+  tailwind: 197/5,
+  slopeUp: -36,
+  slopeDown: 224,
+  vap: 130/5,
+  revInop: 142
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1833,
+  weightBelow: 0.039,
+  weightAbove: 0.040,
+  elevation: 0.052,
+  tempBelowISA: 17/5,
+  tempAboveISA: 37/5,
+  headwind: -43/5,
+  tailwind: 203/5,
+  slopeUp: -36,
+  slopeDown: 224,
+  vap: 135/5,
+  revInop: 147
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1838,
+  weightBelow: 0.039,
+  weightAbove: 0.040,
+  elevation: 0.051,
+  tempBelowISA: 18/5,
+  tempAboveISA: 35/5,
+  headwind: -44/5,
+  tailwind: 203/5,
+  slopeUp: -32,
+  slopeDown: 223,
+  vap: 139/5,
+  revInop: 140
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2359,
+  weightBelow: 0.058,
+  weightAbove: 0.059,
+  elevation: 0.069,
+  tempBelowISA: 24/5,
+  tempAboveISA: 49/5,
+  headwind: -51/5,
+  tailwind: 249/5,
+  slopeUp: -23,
+  slopeDown: 152,
+  vap: 243/5,
+  revInop: 0
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1466,
+  weightBelow: 0.031,
+  weightAbove: 0.032,
+  elevation: 0.043,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -39/5,
+  tailwind: 185/5,
+  slopeUp: -31,
+  slopeDown: 194,
+  vap: 125/5,
+  revInop: 110
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1611,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -32,
+  slopeDown: 195,
+  vap: 131/5,
+  revInop: 116
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1612,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -30,
+  slopeDown: 195,
+  vap: 132/5,
+  revInop: 113
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 41/5,
+  headwind: -48/5,
+  tailwind: 230/5,
+  slopeUp: -21,
+  slopeDown: 133,
+  vap: 226/5,
+  revInop: 0
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1466,
+  weightBelow: 0.031,
+  weightAbove: 0.032,
+  elevation: 0.043,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -39/5,
+  tailwind: 185/5,
+  slopeUp: -31,
+  slopeDown: 194,
+  vap: 125/5,
+  revInop: 110
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1611,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -32,
+  slopeDown: 195,
+  vap: 131/5,
+  revInop: 116
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1612,
+  weightBelow: 0.032,
+  weightAbove: 0.033,
+  elevation: 0.044,
+  tempBelowISA: 15/5,
+  tempAboveISA: 30/5,
+  headwind: -42/5,
+  tailwind: 192/5,
+  slopeUp: -30,
+  slopeDown: 195,
+  vap: 132/5,
+  revInop: 113
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 41/5,
+  headwind: -48/5,
+  tailwind: 230/5,
+  slopeUp: -21,
+  slopeDown: 133,
+  vap: 226/5,
+  revInop: 0
+},
+       	},
+      },
+    },
+	
+ "2": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1759,
+  weightBelow: 0.048,
+  weightAbove: 0.051,
+  elevation: 0.071,
+  tempBelowISA: 21/5,
+  tempAboveISA: 49/5,
+  headwind: -44/5,
+  tailwind: 307/5,
+  slopeUp: -35,
+  slopeDown: 344,
+  vap: 181/5,
+  revInop: 480
+},
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1834,
+  weightBelow: 0.047,
+  weightAbove: 0.050,
+  elevation: 0.069,
+  tempBelowISA: 17/5,
+  tempAboveISA: 48/5,
+  headwind: -44/5,
+  tailwind: 309/5,
+  slopeUp: -36,
+  slopeDown: 337,
+  vap: 188/5,
+  revInop: 467
+},
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1834,
+  weightBelow: 0.047,
+  weightAbove: 0.050,
+  elevation: 0.069,
+  tempBelowISA: 17/5,
+  tempAboveISA: 48/5,
+  headwind: -44/5,
+  tailwind: 309/5,
+  slopeUp: -35,
+  slopeDown: 337,
+  vap: 188/5,
+  revInop: 467
+},
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2112,
+  weightBelow: 0.051,
+  weightAbove: 0.052,
+  elevation: 0.062,
+  tempBelowISA: 21/5,
+  tempAboveISA: 46/5,
+  headwind: -48/5,
+  tailwind: 276/5,
+  slopeUp: -23,
+  slopeDown: 282,
+  vap: 231/5,
+  revInop: 459
+},
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1928,
+  weightBelow: 0.053,
+  weightAbove: 0.056,
+  elevation: 0.078,
+  tempBelowISA: 22/5,
+  tempAboveISA: 54/5,
+  headwind: -49/5,
+  tailwind: 316/5,
+  slopeUp: -37,
+  slopeDown: 362,
+  vap: 176/5,
+  revInop: 397
+},
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2013,
+  weightBelow: 0.052,
+  weightAbove: 0.056,
+  elevation: 0.076,
+  tempBelowISA: 22/5,
+  tempAboveISA: 52/5,
+  headwind: -57/5,
+  tailwind: 318/5,
+  slopeUp: -37,
+  slopeDown: 357,
+  vap: 183/5,
+  revInop: 395
+},
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2013,
+  weightBelow: 0.052,
+  weightAbove: 0.056,
+  elevation: 0.076,
+  tempBelowISA: 22/5,
+  tempAboveISA: 52/5,
+  headwind: -47/5,
+  tailwind: 318/5,
+  slopeUp: -34,
+  slopeDown: 357,
+  vap: 183/5,
+  revInop: 395
+},
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2359,
+  weightBelow: 0.058,
+  weightAbove: 0.059,
+  elevation: 0.070,
+  tempBelowISA: 24/5,
+  tempAboveISA: 52/5,
+  headwind: -51/5,
+  tailwind: 289/5,
+  slopeUp: -24,
+  slopeDown: 289,
+  vap: 237/5,
+  revInop: 349
+},
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1616,
+  weightBelow: 0.043,
+  weightAbove: 0.045,
+  elevation: 0.062,
+  tempBelowISA: 18/5,
+  tempAboveISA: 44/5,
+  headwind: -41/5,
+  tailwind: 286/5,
+  slopeUp: -32,
+  slopeDown: 296,
+  vap: 166/5,
+  revInop: 389
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -32,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -30,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 42/5,
+  headwind: -48/5,
+  tailwind: 255/5,
+  slopeUp: -21,
+  slopeDown: 235,
+  vap: 226/5,
+  revInop: 324
+},
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 1616,
+  weightBelow: 0.043,
+  weightAbove: 0.045,
+  elevation: 0.062,
+  tempBelowISA: 18/5,
+  tempAboveISA: 44/5,
+  headwind: -41/5,
+  tailwind: 286/5,
+  slopeUp: -32,
+  slopeDown: 296,
+  vap: 166/5,
+  revInop: 389
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -32,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 1716,
+  weightBelow: 0.041,
+  weightAbove: 0.044,
+  elevation: 0.062,
+  tempBelowISA: 16/5,
+  tempAboveISA: 44/5,
+  headwind: -43/5,
+  tailwind: 290/5,
+  slopeUp: -30,
+  slopeDown: 293,
+  vap: 174/5,
+  revInop: 387
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2008,
+  weightBelow: 0.048,
+  weightAbove: 0.047,
+  elevation: 0.057,
+  tempBelowISA: 20/5,
+  tempAboveISA: 42/5,
+  headwind: -48/5,
+  tailwind: 255/5,
+  slopeUp: -21,
+  slopeDown: 235,
+  vap: 226/5,
+  revInop: 324
+},
+        },
+	    },
+	  },
+		
+  "1": {
+    "5": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2275,
+  weightBelow: 0.032,
+  weightAbove: 0.042,
+  elevation: 0.064,
+  tempBelowISA: 23/5,
+  tempAboveISA: 47/5,
+  headwind: -66/5,
+  tailwind: 322/5,
+  slopeUp: -151,
+  slopeDown: 1071,
+  vap: 146/5,
+  revInop: 242
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2372,
+  weightBelow: 0.032,
+  weightAbove: 0.042,
+  elevation: 0.064,
+  tempBelowISA: 23/5,
+  tempAboveISA: 47/5,
+  headwind: -68/5,
+  tailwind: 326/5,
+  slopeUp: -152,
+  slopeDown: 1074,
+  vap: 151/5,
+  revInop: 241
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2372,
+  weightBelow: 0.032,
+  weightAbove: 0.042,
+  elevation: 0.064,
+  tempBelowISA: 23/5,
+  tempAboveISA: 47/5,
+  headwind: -68/5,
+  tailwind: 326/5,
+  slopeUp: -152,
+  slopeDown: 1074,
+  vap: 151/5,
+  revInop: 241
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2573,
+  weightBelow: 0.038,
+  weightAbove: 0.046,
+  elevation: 0.065,
+  tempBelowISA: 26/5,
+  tempAboveISA: 51/5,
+  headwind: -72/5,
+  tailwind: 338/5,
+  slopeUp: -131,
+  slopeDown: 1027,
+  vap: 219/5,
+  revInop: 96
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2431,
+  weightBelow: 0.037,
+  weightAbove: 0.047,
+  elevation: 0.071,
+  tempBelowISA: 24/5,
+  tempAboveISA: 51/5,
+  headwind: -68/5,
+  tailwind: 330/5,
+  slopeUp: -153,
+  slopeDown: 1069,
+  vap: 143/5,
+  revInop: 243
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2537,
+  weightBelow: 0.037,
+  weightAbove: 0.047,
+  elevation: 0.070,
+  tempBelowISA: 25/5,
+  tempAboveISA: 50/5,
+  headwind: -70/5,
+  tailwind: 334/5,
+  slopeUp: -154,
+  slopeDown: 1050,
+  vap: 149/5,
+  revInop: 242
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2537,
+  weightBelow: 0.037,
+  weightAbove: 0.047,
+  elevation: 0.070,
+  tempBelowISA: 25/5,
+  tempAboveISA: 50/5,
+  headwind: -70/5,
+  tailwind: 334/5,
+  slopeUp: -154,
+  slopeDown: 1050,
+  vap: 149/5,
+  revInop: 242
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2819,
+  weightBelow: 0.045,
+  weightAbove: 0.053,
+  elevation: 0.072,
+  tempBelowISA: 28/5,
+  tempAboveISA: 56/5,
+  headwind: -75/5,
+  tailwind: 351/5,
+  slopeUp: -133,
+  slopeDown: 890,
+  vap: 230/5,
+  revInop: 106
+}
+,
+      },
+    },
+    "FULL": {
+      "NO": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2107,
+  weightBelow: 0.031,
+  weightAbove: 0.039,
+  elevation: 0.059,
+  tempBelowISA: 22/5,
+  tempAboveISA: 44/5,
+  headwind: -69/5,
+  tailwind: 311/5,
+  slopeUp: -116,
+  slopeDown: 986,
+  vap: 136/5,
+  revInop: 194
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2429,
+  weightBelow: 0.038,
+  weightAbove: 0.043,
+  elevation: 0.061,
+  tempBelowISA: 25/5,
+  tempAboveISA: 48/5,
+  headwind: -75/5,
+  tailwind: 330/5,
+  slopeUp: -108,
+  slopeDown: 964,
+  vap: 219/5,
+  revInop: 70
+}
+,
+      },
+      "YES": {
+        "MAX MAN": 
+{
+  refWeight: 32000,
+  refDistance: 2107,
+  weightBelow: 0.031,
+  weightAbove: 0.039,
+  elevation: 0.059,
+  tempBelowISA: 22/5,
+  tempAboveISA: 44/5,
+  headwind: -69/5,
+  tailwind: 311/5,
+  slopeUp: -116,
+  slopeDown: 986,
+  vap: 136/5,
+  revInop: 194
+}
+,
+        "HIGH": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "MEDIUM": 
+{
+  refWeight: 32000,
+  refDistance: 2222,
+  weightBelow: 0.032,
+  weightAbove: 0.038,
+  elevation: 0.059,
+  tempBelowISA: 23/5,
+  tempAboveISA: 43/5,
+  headwind: -71/5,
+  tailwind: 316/5,
+  slopeUp: -116,
+  slopeDown: 988,
+  vap: 143/5,
+  revInop: 197
+}
+,
+        "LOW": 
+{
+  refWeight: 32000,
+  refDistance: 2429,
+  weightBelow: 0.038,
+  weightAbove: 0.043,
+  elevation: 0.061,
+  tempBelowISA: 25/5,
+  tempAboveISA: 48/5,
+  headwind: -75/5,
+  tailwind: 330/5,
+  slopeUp: -108,
+  slopeDown: 964,
+  vap: 219/5,
+  revInop: 70
+},
+  
+     },
+    },
+  },
+};
+
+
+
+// ZAPIS I ODCZYT LOCALSTORAGE
+window.onload = function () {
+  const ids = [
+    "aircraft", "runwayCondition", "flapSetting", "icing", "runwayDistance",
+    "weight", "elevation", "runwayDir", "windDir", "windSpeed",
+    "temperature", "vap", "slope", "revInop"
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    const saved = localStorage.getItem(id);
+    if (saved !== null) {
+      if (el.type === "checkbox") {
+        el.checked = saved === "true";
+      } else {
+        el.value = saved;
+      }
+    }
+  });
+};
+
+function saveInputsToLocalStorage() {
+  const ids = [
+    "aircraft", "runwayCondition", "flapSetting", "icing", "runwayDistance",
+    "weight", "elevation", "runwayDir", "windDir", "windSpeed",
+    "temperature", "vap", "slope", "revInop"
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    localStorage.setItem(id, el.type === "checkbox" ? el.checked : el.value);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const inputs = Array.from(document.querySelectorAll("input, select"));
+  inputs.forEach((el, index) => {
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const next = inputs[index + 1];
+        if (next) next.focus();
+      }
+    });
+  });
+});
+</script>
+
+
+
+</script>
+
+<!-- Wklej tutaj ↓↓↓ -->
+<div id="footer-info">
+  Created by Michal Osowski – QRH-3707-143 REVISION 26 - MARCH  10, 2025
+</div>
+<style>
+.warning {
+  margin-top: 10px;
+  color: #ff4444;
+  font-weight: bold;
+}
+  #footer-info {
+    position: fixed;
+    bottom: 10px;
+    right: 20px;
+    font-size: 12px;
+    color: #ccc;
+    font-style: italic;
+    z-index: 1000;
+    pointer-events: none;
+  }
+	
+	
+	
+</style>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
